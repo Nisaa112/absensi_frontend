@@ -1,3 +1,5 @@
+import 'package:aplikasi_absensi/page/scan_page.dart';
+import 'package:aplikasi_absensi/widgets/custom_navbar.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatelessWidget {
@@ -6,6 +8,7 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      bottomNavigationBar: const CustomNavbar(currentIndex: 0),
       backgroundColor: Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
@@ -107,30 +110,35 @@ class HomePage extends StatelessWidget {
       
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const ScanPage()),
+          );
+        },
         backgroundColor: const Color(0xFF0D1B2A),
         shape: const CircleBorder(),
         child: const Icon(Icons.qr_code_scanner, color: Colors.white, size: 30),
       ),
 
-      bottomNavigationBar: BottomAppBar(
-        color: const Color(0xFF0D1B2A),
-        shape: const CircularNotchedRectangle(),
-        notchMargin: 8,
-        child: SizedBox(
-          height: 60,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              IconButton(onPressed: () {}, icon: const Icon(Icons.home, color: Colors.orange)),
-              IconButton(onPressed: () {}, icon: const Icon(Icons.assignment_ind_outlined, color: Colors.white)),
-              const SizedBox(width: 40),
-              IconButton(onPressed: () {}, icon: const Icon(Icons.history, color: Colors.white)),
-              IconButton(onPressed: () {}, icon: const Icon(Icons.person_outline, color: Colors.white)),
-            ],
-          ),
-        ),
-      ),
+      // bottomNavigationBar: BottomAppBar(
+      //   color: const Color(0xFF0D1B2A),
+      //   shape: const CircularNotchedRectangle(),
+      //   notchMargin: 8,
+      //   child: SizedBox(
+      //     height: 60,
+      //     child: Row(
+      //       mainAxisAlignment: MainAxisAlignment.spaceAround,
+      //       children: [
+      //         IconButton(onPressed: () {}, icon: const Icon(Icons.home, color: Colors.orange)),
+      //         IconButton(onPressed: () {}, icon: const Icon(Icons.assignment_ind_outlined, color: Colors.white)),
+      //         const SizedBox(width: 40),
+      //         IconButton(onPressed: () {}, icon: const Icon(Icons.history, color: Colors.white)),
+      //         IconButton(onPressed: () {}, icon: const Icon(Icons.person_outline, color: Colors.white)),
+      //       ],
+      //     ),
+      //   ),
+      // ),
     );
   }
 

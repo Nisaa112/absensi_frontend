@@ -1,3 +1,4 @@
+import 'package:aplikasi_absensi/widgets/custom_navbar.dart';
 import 'package:flutter/material.dart';
 
 class PerizinanPage extends StatelessWidget {
@@ -6,6 +7,7 @@ class PerizinanPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      bottomNavigationBar: const CustomNavbar(currentIndex: 1, showFabSpace: false),
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -76,33 +78,33 @@ class PerizinanPage extends StatelessWidget {
         ),
       ),
       
-      bottomNavigationBar: Container(
-        height: 70,
-        decoration: const BoxDecoration(
-          color: Color(0xFF0D1B2A),
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(25),
-            topRight: Radius.circular(25),
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            IconButton(
-              icon: const Icon(Icons.home, color: Colors.orange),
-              onPressed: () => Navigator.pop(context), 
-            ),
-            IconButton(
-              icon: const Icon(Icons.assignment_ind, color: Colors.white),
-              onPressed: () {},
-            ),
-            IconButton(
-              icon: const Icon(Icons.history, color: Colors.white),
-              onPressed: () {},
-            ),
-          ],
-        ),
-      ),
+      // bottomNavigationBar: Container(
+      //   height: 70,
+      //   decoration: const BoxDecoration(
+      //     color: Color(0xFF0D1B2A),
+      //     borderRadius: BorderRadius.only(
+      //       topLeft: Radius.circular(25),
+      //       topRight: Radius.circular(25),
+      //     ),
+      //   ),
+      //   child: Row(
+      //     mainAxisAlignment: MainAxisAlignment.spaceAround,
+      //     children: [
+      //       IconButton(
+      //         icon: const Icon(Icons.home, color: Colors.orange),
+      //         onPressed: () => Navigator.pop(context), 
+      //       ),
+      //       IconButton(
+      //         icon: const Icon(Icons.assignment_ind, color: Colors.white),
+      //         onPressed: () {},
+      //       ),
+      //       IconButton(
+      //         icon: const Icon(Icons.history, color: Colors.white),
+      //         onPressed: () {},
+      //       ),
+      //     ],
+      //   ),
+      // ),
     );
   }
 

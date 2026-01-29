@@ -1,7 +1,15 @@
+import 'package:aplikasi_absensi/page/home_page.dart';
 import 'package:flutter/material.dart';
 
-class LoginPage extends StatelessWidget {
+class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
+
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  bool _isPasswordObscured = true;
 
   @override
   Widget build(BuildContext context) {
@@ -16,12 +24,12 @@ class LoginPage extends StatelessWidget {
               const SizedBox(height: 60),
               Center(
                 child: Image.asset(
-                  'assets/gambar1.png', 
+                  'assets/gambar1.png',
                   height: 250,
                 ),
               ),
               const SizedBox(height: 30),
-              
+
               const Text(
                 "Login",
                 style: TextStyle(
@@ -43,11 +51,17 @@ class LoginPage extends StatelessWidget {
               const SizedBox(height: 8),
               TextField(
                 decoration: InputDecoration(
-                  filled: true,
-                  fillColor: Colors.grey[100],
+                  hintText: "Enter your serial number",
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: Colors.grey),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: Color(0xFF135D66), width: 2),
                   ),
                 ),
               ),
@@ -59,13 +73,30 @@ class LoginPage extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               TextField(
-                obscureText: true,
+                obscureText: _isPasswordObscured, 
                 decoration: InputDecoration(
-                  filled: true,
-                  fillColor: Colors.grey[100],
+                  hintText: "Enter your password",
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _isPasswordObscured ? Icons.visibility_off : Icons.visibility,
+                      color: Colors.grey,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _isPasswordObscured = !_isPasswordObscured;
+                      });
+                    },
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: Colors.grey),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: Color(0xFF135D66), width: 2),
                   ),
                 ),
               ),
@@ -98,18 +129,6 @@ class LoginPage extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Homepage")),
-      body: const Center(child: Text("Welcome Home!")),
     );
   }
 }
