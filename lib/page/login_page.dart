@@ -1,5 +1,6 @@
-import 'package:aplikasi_absensi/page/home_page.dart';
+import 'package:aplikasi_absensi/viewmodel/auth_viewmodel.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -9,10 +10,49 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  final TextEditingController _serialController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
   bool _isPasswordObscured = true;
 
   @override
+  void dispose() {
+    _serialController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  void _handleLogin() async {
+    final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
+    
+    String serial = _serialController.text.trim();
+    String password = _passwordController.text.trim();
+
+    if (serial.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Serial number dan password wajib diisi")),
+      );
+      return;
+    }
+
+    bool success = await authViewModel.login(serial, password);
+
+    if (success) {
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, '/');
+      }
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(authViewModel.errorMessage ?? "Login Gagal")),
+        );
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final isLoading = context.watch<AuthViewModel>().isLoading;
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
@@ -26,10 +66,10 @@ class _LoginPageState extends State<LoginPage> {
                 child: Image.asset(
                   'assets/gambar1.png',
                   height: 250,
+                  errorBuilder: (context, error, stackTrace) => const Icon(Icons.image, size: 100),
                 ),
               ),
               const SizedBox(height: 30),
-
               const Text(
                 "Login",
                 style: TextStyle(
@@ -50,11 +90,11 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 8),
               TextField(
+                controller: _serialController, 
+                keyboardType: TextInputType.number,
                 decoration: InputDecoration(
                   hintText: "Enter your serial number",
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                     borderSide: const BorderSide(color: Colors.grey),
@@ -73,6 +113,7 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 8),
               TextField(
+                controller: _passwordController, 
                 obscureText: _isPasswordObscured, 
                 decoration: InputDecoration(
                   hintText: "Enter your password",
@@ -81,15 +122,9 @@ class _LoginPageState extends State<LoginPage> {
                       _isPasswordObscured ? Icons.visibility_off : Icons.visibility,
                       color: Colors.grey,
                     ),
-                    onPressed: () {
-                      setState(() {
-                        _isPasswordObscured = !_isPasswordObscured;
-                      });
-                    },
+                    onPressed: () => setState(() => _isPasswordObscured = !_isPasswordObscured),
                   ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                     borderSide: const BorderSide(color: Colors.grey),
@@ -106,22 +141,19 @@ class _LoginPageState extends State<LoginPage> {
                 width: double.infinity,
                 height: 55,
                 child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => const HomePage()),
-                    );
-                  },
+                  onPressed: isLoading ? null : _handleLogin,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF135D66),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
                     ),
                   ),
-                  child: const Text(
-                    "Login",
-                    style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold),
-                  ),
+                  child: isLoading 
+                    ? const CircularProgressIndicator(color: Colors.white) 
+                    : const Text(
+                        "Login",
+                        style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
                 ),
               ),
               const SizedBox(height: 20),
