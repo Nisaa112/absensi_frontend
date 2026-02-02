@@ -31,11 +31,12 @@ class User {
   Null? name;
   String? serialNumber;
   String? role;
-  Null? deviceId;
+  String? deviceId;
   Null? email;
   Null? emailVerifiedAt;
   String? createdAt;
   String? updatedAt;
+  Siswa? siswa;
 
   User(
       {this.id,
@@ -46,7 +47,8 @@ class User {
       this.email,
       this.emailVerifiedAt,
       this.createdAt,
-      this.updatedAt});
+      this.updatedAt,
+      this.siswa});
 
   User.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -58,6 +60,7 @@ class User {
     emailVerifiedAt = json['email_verified_at'];
     createdAt = json['created_at'];
     updatedAt = json['updated_at'];
+    siswa = json['siswa'] != null ? new Siswa.fromJson(json['siswa']) : null;
   }
 
   Map<String, dynamic> toJson() {
@@ -69,6 +72,46 @@ class User {
     data['device_id'] = this.deviceId;
     data['email'] = this.email;
     data['email_verified_at'] = this.emailVerifiedAt;
+    data['created_at'] = this.createdAt;
+    data['updated_at'] = this.updatedAt;
+    if (this.siswa != null) {
+      data['siswa'] = this.siswa!.toJson();
+    }
+    return data;
+  }
+}
+
+class Siswa {
+  int? id;
+  int? userId;
+  String? nisn;
+  String? namaSiswa;
+  String? createdAt;
+  String? updatedAt;
+
+  Siswa(
+      {this.id,
+      this.userId,
+      this.nisn,
+      this.namaSiswa,
+      this.createdAt,
+      this.updatedAt});
+
+  Siswa.fromJson(Map<String, dynamic> json) {
+    id = json['id'];
+    userId = json['user_id'];
+    nisn = json['nisn'];
+    namaSiswa = json['nama_siswa'];
+    createdAt = json['created_at'];
+    updatedAt = json['updated_at'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['id'] = this.id;
+    data['user_id'] = this.userId;
+    data['nisn'] = this.nisn;
+    data['nama_siswa'] = this.namaSiswa;
     data['created_at'] = this.createdAt;
     data['updated_at'] = this.updatedAt;
     return data;

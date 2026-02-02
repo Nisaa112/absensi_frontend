@@ -1,4 +1,6 @@
-import 'package:aplikasi_absensi/viewmodel/auth_viewmodel.dart';
+import 'package:aplikasi_absensi/page/guru_home_page.dart';
+import 'package:aplikasi_absensi/page/home_page.dart';
+import 'package:aplikasi_absensi/viewmodel/auth_viewmodel.dart'; // Pastikan import ini ada
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -10,9 +12,11 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  // 1. Tambahkan Controller & State Loading
   final TextEditingController _serialController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isPasswordObscured = true;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -21,38 +25,63 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  void _handleLogin() async {
-    final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
-    
-    String serial = _serialController.text.trim();
-    String password = _passwordController.text.trim();
-
-    if (serial.isEmpty || password.isEmpty) {
+  // 2. Logika Login Sesuai Role
+  Future<void> _handleLogin() async {
+    if (_serialController.text.isEmpty || _passwordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Serial number dan password wajib diisi")),
+        const SnackBar(content: Text('Nomor Serial dan Password tidak boleh kosong.')),
       );
       return;
     }
 
-    bool success = await authViewModel.login(serial, password);
+    setState(() {
+      _isLoading = true;
+    });
+
+    final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
+
+    final bool success = await authViewModel.login(
+      _serialController.text.trim(), 
+      _passwordController.text.trim(),
+    );
+    
+    if (!mounted) return;
+
+    setState(() {
+      _isLoading = false;
+    });
 
     if (success) {
-      if (mounted) {
-        Navigator.pushReplacementNamed(context, '/');
+      // Ambil role dari ViewModel, paksa ke lowercase untuk keamanan pengecekan
+      final String userRole = (authViewModel.userRole ?? 'siswa').toLowerCase(); 
+
+      Widget targetPage;
+
+      if (userRole == 'guru') {
+        targetPage = const GuruHomePage(); 
+      } else {
+        targetPage = const HomePage(); // Default untuk siswa
       }
+
+      // Navigasi: Hapus history login agar tidak bisa di-back
+      Navigator.pushAndRemoveUntil(
+        context, 
+        MaterialPageRoute(builder: (context) => targetPage),
+        (route) => false
+      );
+      
     } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(authViewModel.errorMessage ?? "Login Gagal")),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(authViewModel.errorMessage ?? 'Terjadi kesalahan.'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final isLoading = context.watch<AuthViewModel>().isLoading;
-
     return Scaffold(
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
@@ -70,6 +99,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               const SizedBox(height: 30),
+
               const Text(
                 "Login",
                 style: TextStyle(
@@ -90,7 +120,7 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 8),
               TextField(
-                controller: _serialController, 
+                controller: _serialController, // Tambahkan controller
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
                   hintText: "Enter your serial number",
@@ -113,7 +143,7 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 8),
               TextField(
-                controller: _passwordController, 
+                controller: _passwordController, // Tambahkan controller
                 obscureText: _isPasswordObscured, 
                 decoration: InputDecoration(
                   hintText: "Enter your password",
@@ -141,15 +171,19 @@ class _LoginPageState extends State<LoginPage> {
                 width: double.infinity,
                 height: 55,
                 child: ElevatedButton(
-                  onPressed: isLoading ? null : _handleLogin,
+                  onPressed: _isLoading ? null : _handleLogin, // Pasang fungsi login
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF135D66),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
                     ),
                   ),
-                  child: isLoading 
-                    ? const CircularProgressIndicator(color: Colors.white) 
+                  child: _isLoading 
+                    ? const SizedBox(
+                        height: 24, 
+                        width: 24, 
+                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
+                      )
                     : const Text(
                         "Login",
                         style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold),

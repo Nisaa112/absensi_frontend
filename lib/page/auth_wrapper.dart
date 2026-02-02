@@ -29,14 +29,14 @@ class AuthWrapper extends StatelessWidget {
     final userRole = authViewModel.userRole?.toLowerCase() ?? '';
 
     switch (userRole) {
-      // case 'admin': 
-      //   return const AdminNavbarScreen(); 
+      // case 'admin':
+      //   return const AdminHomePage();
         
-      case 'guru': 
-        return const GuruHomePage(); 
+      case 'guru':
+        return const GuruNavbar(currentIndex: 0); 
 
-      case 'siswa': 
-        return const HomePage(); 
+      case 'siswa':
+        return const CustomNavbar(currentIndex: 0); 
 
       default:
         return const LoginPage();
