@@ -70,19 +70,24 @@ class AuthViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
+      print('🚀 Memulai proses login untuk: $serial');
       final loginData = await _authService.login(serial, password);
       
       final user = loginData.user; 
       final token = loginData.authorization?.token;
 
       if (user == null || token == null) {
-        throw Exception("Data user atau token tidak ditemukan");
+        throw Exception("Data user atau token tidak ditemukan dari server");
       }
+
+      String displayName = user.name ?? user.siswa?.namaSiswa ?? "User";
+
+      print('📦 Menyimpan session untuk: $displayName dengan Role: ${user.role}');
 
       await TokenStorage.saveUserSession(
         token: token,
         id: user.id!,
-        name: user.name,
+        name: displayName,
         serialNumber: user.serialNumber!,
         role: user.role!,
       ); 
@@ -90,14 +95,17 @@ class AuthViewModel extends ChangeNotifier {
       _isLoggedIn = true;
       _token = token;
       _userId = user.id;
-      _userName = user.name;
+      _userName = displayName;
       _userSerial = user.serialNumber; 
       _userRole = user.role; 
+
+      print('✅ Login Berhasil. isLoggedIn: $_isLoggedIn, Role: $_userRole');
 
       _isLoading = false;
       notifyListeners();
       return true; 
     } catch (e) {
+      print('❌ Login Gagal di ViewModel: $e');
       _isLoading = false;
       _errorMessage = e.toString();
       notifyListeners();

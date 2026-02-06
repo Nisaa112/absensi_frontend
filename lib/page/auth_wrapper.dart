@@ -1,9 +1,8 @@
-import 'package:aplikasi_absensi/page/guru_home_page.dart';
 import 'package:aplikasi_absensi/page/home_page.dart';
-import 'package:aplikasi_absensi/page/login_page.dart'; 
+import 'package:aplikasi_absensi/page/login_page.dart';
 import 'package:aplikasi_absensi/viewmodel/auth_viewmodel.dart';
-import 'package:aplikasi_absensi/widgets/custom_navbar.dart';
-import 'package:aplikasi_absensi/widgets/guru_navbar.dart';
+import 'package:aplikasi_absensi/widgets/guru_main_screen.dart';
+import 'package:aplikasi_absensi/widgets/siswa_main_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -12,34 +11,29 @@ class AuthWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final authViewModel = Provider.of<AuthViewModel>(context);
+    final authVM = context.watch<AuthViewModel>();
 
-    if (authViewModel.isLoading) {
-      return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
+    if (authVM.isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    // if (!authViewModel.isLoggedIn) {
-    //   return const WelcomePage();
-    // }
+    if (!authVM.isLoggedIn) {
+      return const LoginPage();
+    }
 
-    final userRole = authViewModel.userRole?.toLowerCase() ?? '';
+    final String role = authVM.userRole?.toLowerCase() ?? '';
 
-    switch (userRole) {
-      // case 'admin':
-      //   return const AdminHomePage();
-        
-      case 'guru':
-        return const GuruNavbar(currentIndex: 0); 
-
-      case 'siswa':
-        return const CustomNavbar(currentIndex: 0); 
-
-      default:
-        return const LoginPage();
+    if (role == 'guru') {
+      return const GuruMainScreen(); 
+    } else if (role == 'siswa') {
+      return const Scaffold(
+        body: HomePage(),
+        bottomNavigationBar: SiswaMainScreen(),
+      );
+    } else {
+      return const Scaffold(
+        body: Center(child: Text("Menyiapkan akun...")),
+      );
     }
   }
 }

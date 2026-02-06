@@ -28,12 +28,12 @@ class loginModel {
 
 class User {
   int? id;
-  Null? name;
+  String? name;
   String? serialNumber;
   String? role;
   String? deviceId;
-  Null? email;
-  Null? emailVerifiedAt;
+  String? email;
+  String? emailVerifiedAt;
   String? createdAt;
   String? updatedAt;
   Siswa? siswa;

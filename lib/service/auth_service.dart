@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:aplikasi_absensi/device_helper.dart';
 import 'package:aplikasi_absensi/model/login_model.dart'; 
 import 'package:aplikasi_absensi/utils/token_storage.dart';
 import 'package:http/http.dart' as http;
@@ -16,13 +17,11 @@ class AuthService {
                 'Authorization': 'Bearer $token',
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
+                'ngrok-skip-browser-warning': 'true', // Tambahan untuk ngrok
             },
         ).timeout(const Duration(seconds: 15));
 
-        if (response.statusCode == 200) {
-            return true; 
-        }
-        return false;
+        return response.statusCode == 200;
     } catch (e) {
         print('❌ Error saat verifikasi token: $e');
         return false;
@@ -33,6 +32,18 @@ class AuthService {
     final url = Uri.parse('$_baseUrl/login');
 
     try {
+      // PERHATIAN: Jika error Unsupported Operation muncul di sini, 
+      // cek file device_helper.dart dan pastikan ada pengecekan kIsWeb.
+      String autoDeviceId;
+      try {
+        autoDeviceId = await DeviceHelper.getDeviceId();
+      } catch (e) {
+        print('⚠️ Gagal mengambil Device ID, menggunakan fallback: $e');
+        autoDeviceId = 'unknown_device';
+      }
+
+      print('🚀 Melakukan login untuk: $serial ke $_baseUrl');
+
       final response = await http.post(
         url,
         headers: {
@@ -42,29 +53,19 @@ class AuthService {
         body: jsonEncode({
           'serial_number': serial,
           'password': password,
+          'device_id': autoDeviceId, 
         }),
       ).timeout(const Duration(seconds: 30));
 
       final responseBody = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
-        final data = loginModel.fromJson(responseBody);
-        
-        if (data.authorization?.token != null && data.user != null) {
-          await TokenStorage.saveUserSession(
-            token: data.authorization!.token!,
-            id: data.user!.id!,
-            name: data.user!.name,
-            serialNumber: data.user!.serialNumber!,
-            role: data.user!.role!,
-          );
-        }
-        
-        return data;
+        return loginModel.fromJson(responseBody);
       } else {
-        throw Exception(responseBody['message'] ?? 'Gagal login');
+        throw Exception(responseBody['message'] ?? 'Gagal login (Status: ${response.statusCode})');
       }
     } catch (e) {
+      print('❌ Error di AuthService Login: $e');
       rethrow;
     }
   }
@@ -80,7 +81,7 @@ class AuthService {
             'Authorization': 'Bearer $token',
             'Accept': 'application/json',
           },
-        );
+        ).timeout(const Duration(seconds: 5));
       } catch (e) {
         print('Warning: Gagal memanggil API logout ke server.');
       }

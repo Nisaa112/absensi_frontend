@@ -1,26 +1,23 @@
-import 'package:aplikasi_absensi/page/scan_page.dart';
-import 'package:aplikasi_absensi/widgets/custom_navbar.dart';
-import 'package:flutter/material.dart';
+  import 'package:flutter/material.dart';
 
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+  class HomePage extends StatelessWidget {
+    const HomePage({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      bottomNavigationBar: const CustomNavbar(currentIndex: 0),
-      backgroundColor: Colors.white,
-      body: SafeArea(
+    @override
+    Widget build(BuildContext context) {
+      return SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Header Profil
               Row(
                 children: [
                   const CircleAvatar(
                     radius: 25,
                     backgroundColor: Color(0xFFE0E0E0),
+                    child: Icon(Icons.person, color: Colors.grey),
                   ),
                   const SizedBox(width: 15),
                   Column(
@@ -37,6 +34,7 @@ class HomePage extends StatelessWidget {
               ),
               const SizedBox(height: 30),
 
+              // Card Jadwal
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
@@ -88,6 +86,7 @@ class HomePage extends StatelessWidget {
               const Text("Rekap Bulanan:", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
               const SizedBox(height: 15),
 
+              // Grid Statistik
               GridView.count(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
@@ -96,99 +95,66 @@ class HomePage extends StatelessWidget {
                 mainAxisSpacing: 15,
                 childAspectRatio: 1.2,
                 children: [
-                  _buildStatCard("Total Sakit", "1", Colors.white, Colors.black),
+                  _buildStatCard("Total Hadir", "18", Colors.white, Colors.black),
                   _buildStatCard("Total Sakit", "1", const Color(0xFF135D66), Colors.white),
-                  _buildStatCard("Total Sakit", "1", Colors.orange, Colors.white),
-                  _buildStatCard("Total Sakit", "1", Colors.white, Colors.black),
+                  _buildStatCard("Total Izin", "2", Colors.orange, Colors.white),
+                  _buildStatCard("Total Alpa", "0", Colors.white, Colors.black),
                 ],
               ),
-              const SizedBox(height: 80), 
+              const SizedBox(height: 100), // Ruang ekstra agar tidak tertutup FAB
             ],
           ),
         ),
-      ),
-      
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const ScanPage()),
-          );
-        },
-        backgroundColor: const Color(0xFF0D1B2A),
-        shape: const CircleBorder(),
-        child: const Icon(Icons.qr_code_scanner, color: Colors.white, size: 30),
-      ),
+      );
+    }
 
-      // bottomNavigationBar: BottomAppBar(
-      //   color: const Color(0xFF0D1B2A),
-      //   shape: const CircularNotchedRectangle(),
-      //   notchMargin: 8,
-      //   child: SizedBox(
-      //     height: 60,
-      //     child: Row(
-      //       mainAxisAlignment: MainAxisAlignment.spaceAround,
-      //       children: [
-      //         IconButton(onPressed: () {}, icon: const Icon(Icons.home, color: Colors.orange)),
-      //         IconButton(onPressed: () {}, icon: const Icon(Icons.assignment_ind_outlined, color: Colors.white)),
-      //         const SizedBox(width: 40),
-      //         IconButton(onPressed: () {}, icon: const Icon(Icons.history, color: Colors.white)),
-      //         IconButton(onPressed: () {}, icon: const Icon(Icons.person_outline, color: Colors.white)),
-      //       ],
-      //     ),
-      //   ),
-      // ),
-    );
-  }
+    // Widget pembantu tetap sama
+    Widget _buildScheduleRow(String subject, String time) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(subject, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500)),
+            Text(time, style: const TextStyle(color: Colors.white70)),
+          ],
+        ),
+      );
+    }
 
-  Widget _buildScheduleRow(String subject, String time) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(subject, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500)),
-          Text(time, style: const TextStyle(color: Colors.white70)),
-        ],
-      ),
-    );
-  }
+    Widget _buildDateCard(String day, String date, {bool isSelected = false}) {
+      return Container(
+        width: 70,
+        margin: const EdgeInsets.only(right: 12),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFFE0E0E0) : Colors.grey[100],
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(day, style: const TextStyle(fontSize: 12, color: Colors.black54)),
+            Text(date, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+          ],
+        ),
+      );
+    }
 
-  Widget _buildDateCard(String day, String date, {bool isSelected = false}) {
-    return Container(
-      width: 70,
-      margin: const EdgeInsets.only(right: 12),
-      decoration: BoxDecoration(
-        color: isSelected ? const Color(0xFFE0E0E0) : Colors.grey[100],
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [if(isSelected) BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 4))]
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(day, style: const TextStyle(fontSize: 12, color: Colors.black54)),
-          Text(date, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-        ],
-      ),
-    );
+    Widget _buildStatCard(String title, String count, Color bgColor, Color textColor) {
+      return Container(
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 5))],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(title, style: TextStyle(color: textColor, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 10),
+            Text(count, style: TextStyle(color: textColor, fontSize: 40, fontWeight: FontWeight.bold)),
+          ],
+        ),
+      );
+    }
   }
-
-  Widget _buildStatCard(String title, String count, Color bgColor, Color textColor) {
-    return Container(
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 5))],
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(title, style: TextStyle(color: textColor, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 10),
-          Text(count, style: TextStyle(color: textColor, fontSize: 40, fontWeight: FontWeight.bold)),
-        ],
-      ),
-    );
-  }
-}

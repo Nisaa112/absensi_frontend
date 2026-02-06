@@ -1,76 +1,69 @@
-import 'package:aplikasi_absensi/db_helper.dart';
-import 'package:aplikasi_absensi/model/user_model.dart' as userModel;
+import 'package:flutter/material.dart';
 import 'package:aplikasi_absensi/service/api_service.dart';
-import 'package:flutter/foundation.dart';
+import 'package:aplikasi_absensi/model/user_model.dart' as userModel;
 
 class UserViewModel extends ChangeNotifier {
-  final DatabaseHelper _dbHelper = DatabaseHelper.instance;
+  List<userModel.Data> _listUsers = [];
+  List<userModel.Data> get listUsers => _listUsers;
 
-  List<userModel.Data> _users = [];
   bool _isLoading = false;
-  String? _errorMessage;
-
-  List<userModel.Data> get users => _users;
   bool get isLoading => _isLoading;
+
+  String? _errorMessage;
   String? get errorMessage => _errorMessage;
 
-  Future<void> fetchUsers() async {
+  Future<void> loadUsers() async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      _users = await _dbHelper.getAllUsers();
-      notifyListeners();
-
-      await synchronizeUsers();
+      // Jika pakai DB Helper seperti contohmu:
+      // _listUsers = await _dbHelper.getAllUsers(); 
+      
+      final apiUsers = await ApiService.fetchUsers();
+      _listUsers = apiUsers;
+      _listUsers.sort((a, b) => a.id!.compareTo(b.id!));
     } catch (e) {
-      _errorMessage = "Gagal memuat data user: $e";
+      _errorMessage = 'Gagal memuat data User: $e';
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
-  Future<void> synchronizeUsers() async {
-    try {
-      final List<userModel.Data> apiUsers = await ApiService.fetchUsers();
-      
-      await _dbHelper.clearUserTable();
-      for (var user in apiUsers) {
-        await _dbHelper.insertUser(user);
-      }
-      
-      _users = apiUsers;
-      notifyListeners();
-    } catch (e) {
-      print('⚠️ Sync User gagal: $e');
-    }
-  }
-
-  Future<void> createUser({
-    required String name,
-    required String serial,
-    required String role,
-    required String password,
-  }) async {
+  Future<void> createUser(userModel.Data user) async {
     _isLoading = true;
+    _errorMessage = null;
     notifyListeners();
 
     try {
-      final userRequest = userModel.Data(
-        name: name,
-        serialNumber: serial,
-        role: role,
-      );
-
-      final Map<String, dynamic> body = userRequest.toJson();
-      body['password'] = password;
-      body['password_confirmation'] = password;
-      
+      final newUser = await ApiService.createUser(user);
+      if (newUser != null) {
+        _listUsers.add(newUser);
+        _listUsers.sort((a, b) => a.id!.compareTo(b.id!));
+      }
     } catch (e) {
-      _errorMessage = "Gagal membuat user: $e";
-      rethrow; 
+      _errorMessage = 'Gagal menambah User: $e';
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> updateUser(userModel.Data user) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      await ApiService.updateUser(user);
+      final index = _listUsers.indexWhere((element) => element.id == user.id);
+      if (index != -1) {
+        _listUsers[index] = user;
+      }
+    } catch (e) {
+      _errorMessage = 'Gagal update User: $e';
+      rethrow;
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -79,16 +72,12 @@ class UserViewModel extends ChangeNotifier {
 
   Future<void> deleteUser(int id) async {
     _isLoading = true;
-    _errorMessage = null;
     notifyListeners();
-
     try {
       await ApiService.deleteUser(id);
-      await _dbHelper.deleteUser(id);
-
-      _users.removeWhere((u) => u.id == id);
+      _listUsers.removeWhere((element) => element.id == id);
     } catch (e) {
-      _errorMessage = "Gagal menghapus user: $e";
+      _errorMessage = 'Gagal menghapus User: $e';
       rethrow;
     } finally {
       _isLoading = false;

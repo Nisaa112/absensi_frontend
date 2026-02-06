@@ -1,6 +1,5 @@
-import 'package:aplikasi_absensi/page/guru_home_page.dart';
-import 'package:aplikasi_absensi/page/home_page.dart';
-import 'package:aplikasi_absensi/viewmodel/auth_viewmodel.dart'; // Pastikan import ini ada
+import 'package:aplikasi_absensi/viewmodel/auth_viewmodel.dart';
+import 'package:aplikasi_absensi/widgets/siswa_main_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -12,11 +11,9 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  // 1. Tambahkan Controller & State Loading
   final TextEditingController _serialController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isPasswordObscured = true;
-  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -25,55 +22,41 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  // 2. Logika Login Sesuai Role
   Future<void> _handleLogin() async {
-    if (_serialController.text.isEmpty || _passwordController.text.isEmpty) {
+    final String serial = _serialController.text.trim();
+    final String password = _passwordController.text.trim();
+
+    if (serial.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Nomor Serial dan Password tidak boleh kosong.')),
       );
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
-
     final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
-
-    final bool success = await authViewModel.login(
-      _serialController.text.trim(), 
-      _passwordController.text.trim(),
-    );
+    final bool success = await authViewModel.login(serial, password);
     
     if (!mounted) return;
 
-    setState(() {
-      _isLoading = false;
-    });
-
     if (success) {
-      // Ambil role dari ViewModel, paksa ke lowercase untuk keamanan pengecekan
-      final String userRole = (authViewModel.userRole ?? 'siswa').toLowerCase(); 
-
-      Widget targetPage;
-
-      if (userRole == 'guru') {
-        targetPage = const GuruHomePage(); 
-      } else {
-        targetPage = const HomePage(); // Default untuk siswa
-      }
-
-      // Navigasi: Hapus history login agar tidak bisa di-back
-      Navigator.pushAndRemoveUntil(
-        context, 
-        MaterialPageRoute(builder: (context) => targetPage),
-        (route) => false
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Login Berhasil! Menyambungkan...'),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 1), // Singkatkan durasi agar tidak menunggu lama
+        ),
       );
-      
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const SiswaMainScreen()),
+      );
+      // --------------------------------------------
+
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(authViewModel.errorMessage ?? 'Terjadi kesalahan.'),
+          content: Text(authViewModel.errorMessage ?? 'Nomor Serial atau Password salah.'),
           backgroundColor: Colors.red,
         ),
       );
@@ -82,6 +65,8 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final authLoading = context.watch<AuthViewModel>().isLoading;
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
@@ -90,12 +75,13 @@ class _LoginPageState extends State<LoginPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 60),
+              const SizedBox(height: 80),
               Center(
                 child: Image.asset(
                   'assets/gambar1.png',
-                  height: 250,
-                  errorBuilder: (context, error, stackTrace) => const Icon(Icons.image, size: 100),
+                  height: 220,
+                  errorBuilder: (context, error, stackTrace) => 
+                      const Icon(Icons.lock_person, size: 100, color: Color(0xFF135D66)),
                 ),
               ),
               const SizedBox(height: 30),
@@ -109,26 +95,23 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               const Text(
-                "Please Sign In to continue",
+                "Silahkan masuk untuk melanjutkan",
                 style: TextStyle(fontSize: 16, color: Colors.grey),
               ),
               const SizedBox(height: 40),
 
               const Text(
-                "Serial Number",
+                "Nomor Serial / NIP",
                 style: TextStyle(fontWeight: FontWeight.w500, color: Color(0xFF1B263B)),
               ),
               const SizedBox(height: 8),
               TextField(
-                controller: _serialController, // Tambahkan controller
-                keyboardType: TextInputType.number,
+                controller: _serialController,
+                keyboardType: TextInputType.text,
                 decoration: InputDecoration(
-                  hintText: "Enter your serial number",
+                  prefixIcon: const Icon(Icons.badge_outlined),
+                  hintText: "Masukkan nomor serial",
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(color: Colors.grey),
-                  ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                     borderSide: const BorderSide(color: Color(0xFF135D66), width: 2),
@@ -143,10 +126,11 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 8),
               TextField(
-                controller: _passwordController, // Tambahkan controller
+                controller: _passwordController,
                 obscureText: _isPasswordObscured, 
                 decoration: InputDecoration(
-                  hintText: "Enter your password",
+                  prefixIcon: const Icon(Icons.lock_outline),
+                  hintText: "Masukkan password",
                   suffixIcon: IconButton(
                     icon: Icon(
                       _isPasswordObscured ? Icons.visibility_off : Icons.visibility,
@@ -155,10 +139,6 @@ class _LoginPageState extends State<LoginPage> {
                     onPressed: () => setState(() => _isPasswordObscured = !_isPasswordObscured),
                   ),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(color: Colors.grey),
-                  ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                     borderSide: const BorderSide(color: Color(0xFF135D66), width: 2),
@@ -167,30 +147,32 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 40),
 
+              // --- Tombol Login ---
               SizedBox(
                 width: double.infinity,
                 height: 55,
                 child: ElevatedButton(
-                  onPressed: _isLoading ? null : _handleLogin, // Pasang fungsi login
+                  onPressed: authLoading ? null : _handleLogin,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF135D66),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
                     ),
+                    elevation: 2,
                   ),
-                  child: _isLoading 
+                  child: authLoading 
                     ? const SizedBox(
                         height: 24, 
                         width: 24, 
                         child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
                       )
                     : const Text(
-                        "Login",
+                        "LOGIN",
                         style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold),
                       ),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 40),
             ],
           ),
         ),
